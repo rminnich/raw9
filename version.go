@@ -152,7 +152,7 @@ type Dir struct {
 
 // assumption: we have a byte slice big enough to hold what
 // we will produce.
-func xversion(b []byte, version string, msize uint32) int {
+func xtversion(b []byte, version string, msize uint32) int {
 	s := 4 + 1 + 2 + 4 + 2 + len(version)
 	b[0], b[1], b[2], b[3] = uint8(s), uint8(s>>8), uint8(s>>16), uint8(s>>24)
 	b[4] = byte(Tversion)
@@ -166,7 +166,30 @@ func xversion(b []byte, version string, msize uint32) int {
 // Assumption: something read the first 4 bytes of a message and returned
 // a byte slice with that many bytes. For consistency, the message will include
 // that length field.
-func rversion(b []byte) (version string, msize uint32) {
+func rtversion(b []byte) (version string, msize uint32) {
+	msize = uint32(b[7]) | uint32(b[8])<<8 | uint32(b[9])<<16 | uint32(b[10])<<24
+	l := uint32(b[11]) | uint32(b[12])<<8
+	version = string(b[13 : 13+l])
+	return version, msize
+}
+
+// assumption: we have a byte slice big enough to hold what
+// we will produce.
+func xrversion(b []byte, version string, msize uint32) int {
+	s := 4 + 1 + 2 + 4 + 2 + len(version)
+	b[0], b[1], b[2], b[3] = uint8(s), uint8(s>>8), uint8(s>>16), uint8(s>>24)
+	b[4] = byte(Rversion)
+	b[5], b[6] = uint8(0xff), uint8(0xff)
+	b[7], b[8], b[9], b[10] = uint8(msize), uint8(msize>>8), uint8(msize>>16), uint8(msize>>24)
+	b[11], b[12] = uint8(len(version)), uint8(len(version)>>8)
+	copy(b[13:], version)
+	return s
+}
+
+// Assumption: something read the first 4 bytes of a message and returned
+// a byte slice with that many bytes. For consistency, the message will include
+// that length field.
+func rrversion(b []byte) (version string, msize uint32) {
 	msize = uint32(b[7]) | uint32(b[8])<<8 | uint32(b[9])<<16 | uint32(b[10])<<24
 	l := uint32(b[11]) | uint32(b[12])<<8
 	version = string(b[13 : 13+l])

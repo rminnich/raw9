@@ -5,8 +5,18 @@ import "testing"
 func TestVersion(t *testing.T) {
 	var b [128]byte
 
-	l := xversion(b[:], "9P2000.L", 0xcafebeef)
-	v, m := rversion(b[:l])
+	l := xtversion(b[:], "9P2000.L", 0xcafebeef)
+	v, m := rtversion(b[:l])
+
+	if v != "9P2000.L" {
+		t.Errorf("%q != 9P2000.L", v)
+	}
+	if m != 0xcafebeef {
+		t.Errorf("%#x != 0xcafebeef", m)
+	}
+
+	l = xrversion(b[:], "9P2000.L", 0xcafebeef)
+	v, m = rrversion(b[:l])
 
 	if v != "9P2000.L" {
 		t.Errorf("%q != 9P2000.L", v)
@@ -16,17 +26,32 @@ func TestVersion(t *testing.T) {
 	}
 }
 
-func BenchmarkTVersion(b *testing.B) {
+func BenchmarkXTVersion(b *testing.B) {
 	var d [128]byte
 	for i := 0; i < b.N; i++ {
-		xversion(d[:], "9P2000.L", 0xcafebeef)
+		xtversion(d[:], "9P2000.L", 0xcafebeef)
 	}
 }
 
-func BenchmarkRVersion(b *testing.B) {
+func BenchmarkRTVersion(b *testing.B) {
 	var d [128]byte
-	l := xversion(d[:], "9P2000.L", 0xcafebeef)
+	l := xtversion(d[:], "9P2000.L", 0xcafebeef)
 	for i := 0; i < b.N; i++ {
-		rversion(d[:l])
+		rtversion(d[:l])
+	}
+}
+
+func BenchmarkXRVersion(b *testing.B) {
+	var d [128]byte
+	for i := 0; i < b.N; i++ {
+		xtversion(d[:], "9P2000.L", 0xcafebeef)
+	}
+}
+
+func BenchmarkRRVersion(b *testing.B) {
+	var d [128]byte
+	l := xtversion(d[:], "9P2000.L", 0xcafebeef)
+	for i := 0; i < b.N; i++ {
+		rtversion(d[:l])
 	}
 }
