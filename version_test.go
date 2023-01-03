@@ -1,4 +1,4 @@
-package main
+package raw9
 
 import "testing"
 

@@ -1,4 +1,4 @@
-package main
+package raw9
 
 // 9P2000 message types
 const (
